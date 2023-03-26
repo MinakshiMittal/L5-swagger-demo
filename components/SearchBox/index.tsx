@@ -1,9 +1,12 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { close } from "../../utils/icons";
 import { useEffect, useState } from "react";
+import { User } from "No/utils/types";
 
 type SearchBoxProps = {
-  users: any;
-  setSearchResult: any;
-  searchResult: any;
+  users: User[];
+  setSearchResult: (searchResult: User[]) => void;
+  searchResult: User[];
 };
 
 export const SearchBox = ({
@@ -17,7 +20,7 @@ export const SearchBox = ({
 
   useEffect(() => {
     const results = users.filter(
-      (user: any) =>
+      (user: User) =>
         user.name.toLowerCase().includes(searchTerm) || user.name === searchTerm
     );
     setSuggestionsList(results);
@@ -26,14 +29,19 @@ export const SearchBox = ({
   const handleAutoComplete = (name: string) => {
     setSearchTerm(name);
     setSuggestionsVisible(false);
-    handleSearch();
   };
 
-  const handleSearch = () => {
-    const results = users.filter(
-      (user: any) =>
-        user.name.toLowerCase().includes(searchTerm) || user.name === searchTerm
+  const handleClear = () => {
+    setSearchResult(users);
+    setSearchTerm("");
+  };
+
+  const handleSearch = (name: string) => {
+    const results = searchResult.filter(
+      (user: User) =>
+        user.name.toLowerCase().includes(searchTerm) || user.name === name
     );
+    setSearchTerm(name);
     setSearchResult(results);
     setSuggestionsVisible(false);
   };
@@ -50,28 +58,46 @@ export const SearchBox = ({
             setSuggestionsVisible(true);
           }}
         />
+        <FontAwesomeIcon
+          className="absolute w-4 h-4 right-28 cursor-pointer font-bold text-lg"
+          icon={close}
+          onClick={handleClear}
+        />
         <button
           className="px-4 py-2 bg-gray-200 ml-2 rounded-lg text-gray-600 font-semibold"
-          onClick={() => handleSearch()}
+          onClick={() => handleSearch(searchTerm)}
         >
           Search
         </button>
       </div>
-      {suggestionsVisible === true && (
-        <div className="h-40 overflow-y-scroll absolute bg-white w-full">
-          {searchResult.map((result: any) => {
-            return (
-              <div
-                className="cursor-pointer flex border-b p-2"
-                onClick={() => handleAutoComplete(result.name)}
-                key={result.id}
-              >
-                <p className="text-gray-600 mr-2">{result.name}</p>
-                <p className="text-gray-400">{result.email}</p>
-              </div>
-            );
-          })}
-        </div>
+      {suggestionsVisible === true ? (
+        suggestionsList.length > 0 ? (
+          <div className="max-h-40 overflow-y-scroll absolute bg-white w-full">
+            {suggestionsList.map((result: User) => {
+              return (
+                <div
+                  className="cursor-pointer flex border-b p-2"
+                  onClick={() => handleAutoComplete(result.name)}
+                  key={result.id}
+                >
+                  <p className="text-gray-600 mr-2">{result.name}</p>
+                  <p className="text-gray-400">{result.email}</p>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div
+            className="max-h-40 overflow-y-scroll absolute bg-white w-full"
+            onBlur={() => setSuggestionsVisible(false)}
+          >
+            <p className="text-gray-400 text-center font-semibold p-4">
+              No suggestions
+            </p>
+          </div>
+        )
+      ) : (
+        <></>
       )}
     </div>
   );
